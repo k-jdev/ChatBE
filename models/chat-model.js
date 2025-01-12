@@ -1,9 +1,12 @@
-const { Schema, model } = require("mongoose");
+const mongoose = require("mongoose");
 
-//create model for chat
-const ChatModel = new Schema({
-  members: [{ type: Schema.Types.ObjectId, ref: "User" }],
-  messages: [{ type: Schema.Types.ObjectId, ref: "Message" }],
-});
+const chatSchema = new mongoose.Schema(
+  {
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+    messages: [{ type: mongoose.Schema.Types.ObjectId, ref: "Message" }],
+  },
+  { timestamps: true }
+);
 
-module.exports = model("Chat", ChatModel);
+module.exports = mongoose.model("Chat", chatSchema);

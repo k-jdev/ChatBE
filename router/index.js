@@ -3,6 +3,8 @@ const router = new Router();
 const { body } = require("express-validator");
 const userController = require("../controllers/user-controller");
 const authMiddleware = require("../middlewares/authMiddleware");
+const chatController = require("../controllers/chat-controller");
+const messageController = require("../controllers/message-controller");
 
 router.post(
   "/register",
@@ -13,8 +15,15 @@ router.post(
 );
 router.post("/login", userController.login);
 router.post("/logout", userController.logout);
+router.post("/chats", chatController.createChat);
+router.post("/messages", messageController.createMessage);
+router.get("/messages/:chatId", messageController.getMessagesByChat);
 router.get("/activate:link", userController.activate);
 router.get("/refresh", userController.refresh);
 router.get("/users", authMiddleware, userController.getUsers);
+router.get("/chats", chatController.getAllChats);
+router.put("/chats/:id", chatController.updateChat);
+router.delete("/chats/:id", chatController.deleteChat);
+router.delete("/chats/:id/confirm", chatController.confirmDeleteChat);
 
 module.exports = router;
