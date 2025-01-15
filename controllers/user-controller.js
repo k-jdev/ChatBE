@@ -74,9 +74,9 @@ class UserController {
   async getUsers(req, res, next) {
     try {
       const users = await userService.getAllUsers();
-      return res.json(users);
+      return res.status(200).json(users);
     } catch (error) {
-      next(error);
+      res.status(500).json({ message: "Failed to fetch users" });
     }
   }
 }

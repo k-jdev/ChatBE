@@ -27,6 +27,15 @@ class UserService {
       `${process.env.API_URL}/api/activate/${activationLink}`
     );
 
+    const chat = await chatModel.create({
+      firstName: name,
+      lastName: "",
+      messages: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      userId: user._id,
+    });
+
     const userDto = new UserDto(user);
     const tokens = tokenService.generateTokens({ ...userDto });
     await tokenService.saveToken(userDto.id, tokens.refreshToken);
@@ -34,6 +43,7 @@ class UserService {
     return {
       ...tokens,
       user: userDto,
+      chatId: chat._id,
     };
   }
   async activate(activationLink) {
@@ -58,6 +68,9 @@ class UserService {
     const userDto = new UserDto(user);
     const tokens = tokenService.generateTokens({ ...userDto });
     await tokenService.saveToken(userDto.id, tokens.refreshToken);
+
+    user.isRegistered = true;
+    await user.save();
 
     return {
       ...tokens,

@@ -20,7 +20,7 @@ router.post("/messages", messageController.createMessage);
 router.get("/messages/:chatId", messageController.getMessagesByChat);
 router.get("/activate:link", userController.activate);
 router.get("/refresh", userController.refresh);
-router.get("/users", authMiddleware, userController.getUsers);
+router.get("/users", userController.getUsers);
 router.get("/chats", chatController.getAllChats);
 router.put("/chats/:id", chatController.updateChat);
 router.delete("/chats/:id", chatController.deleteChat);
