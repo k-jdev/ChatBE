@@ -4,7 +4,8 @@ const { Schema, model } = require("mongoose");
 const UserModel = new Schema({
   email: { type: String, unique: true, required: true },
   password: { type: String, required: true },
-  name: { type: String, required: false },
+  firstName: { type: String, required: false },
+  lastName: { type: String, required: false },
   isActivated: { type: Boolean, default: false },
   isRegistered: { type: Boolean, default: false },
   activationLink: { type: String },

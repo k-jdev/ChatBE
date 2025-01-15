@@ -7,7 +7,7 @@ const UserDto = require("../dtos/user-dto");
 const tokenService = require("../service/token-service");
 
 class UserService {
-  async registration(email, password, name) {
+  async registration(email, password, firstName, lastName) {
     const candidate = await userModel.findOne({ email });
     if (candidate) {
       throw ApiError.BadRequests(
@@ -20,7 +20,8 @@ class UserService {
       email,
       password: hashedPassword,
       activationLink: activationLink,
-      name: name,
+      firstName,
+      lastName,
     });
     await mailService.sendActivationMail(
       email,
@@ -28,8 +29,8 @@ class UserService {
     );
 
     const chat = await chatModel.create({
-      firstName: name,
-      lastName: "",
+      firstName: firstName,
+      lastName: lastName,
       messages: [],
       createdAt: new Date(),
       updatedAt: new Date(),
