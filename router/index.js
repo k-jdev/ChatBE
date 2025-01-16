@@ -20,6 +20,7 @@ router.post("/chats", chatController.createChat);
 router.post("/messages", messageController.createMessage);
 router.get("/messages/:chatId", messageController.getMessagesByChat);
 router.get("/chats/:id", chatController.getChatById);
+router.get("/messages/:chatId/last", messageController.getLastMessageByChat);
 
 // router.get("/activate:link", userController.activate);
 router.get("/refresh", userController.refresh);
