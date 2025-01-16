@@ -5,6 +5,7 @@ const ApiError = require("../exceptions/api-error");
 const mailService = require("../service/mail-service");
 const UserDto = require("../dtos/user-dto");
 const tokenService = require("../service/token-service");
+const chatModel = require("../models/chat-model");
 
 class UserService {
   async registration(email, password, firstName, lastName) {
@@ -15,18 +16,18 @@ class UserService {
       );
     }
     const hashedPassword = await bcrypt.hash(password, 3);
-    const activationLink = uuid.v4();
+    // const activationLink = uuid.v4();
     const user = await userModel.create({
       email,
       password: hashedPassword,
-      activationLink: activationLink,
+      // activationLink: activationLink,
       firstName,
       lastName,
     });
-    await mailService.sendActivationMail(
-      email,
-      `${process.env.API_URL}/api/activate/${activationLink}`
-    );
+    // await mailService.sendActivationMail(
+    //   email,
+    //   `${process.env.API_URL}/api/activate/${activationLink}`
+    // );
 
     const chat = await chatModel.create({
       firstName: firstName,
@@ -47,14 +48,14 @@ class UserService {
       chatId: chat._id,
     };
   }
-  async activate(activationLink) {
-    const user = await userModel.findOne({ activationLink });
-    if (!user) {
-      throw ApiError.BadRequests("Невірне посилання активації");
-    }
-    user.isActivated = true;
-    await user.save();
-  }
+  // async activate(activationLink) {
+  //   const user = await userModel.findOne({ activationLink });
+  //   if (!user) {
+  //     throw ApiError.BadRequests("Невірне посилання активації");
+  //   }
+  //   // user.isActivated = true;
+  //   await user.save();
+  // }
   async login(email, password) {
     const user = await userModel.findOne({ email });
     if (!user) {
