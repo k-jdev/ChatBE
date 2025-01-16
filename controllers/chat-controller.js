@@ -12,7 +12,6 @@ class ChatController {
           .json({ message: "First name, last name, and userId are required" });
       }
 
-      // Проверяем существование пользователя
       const userExists = await userModel.findById(userId);
       if (!userExists) {
         return res
@@ -28,35 +27,50 @@ class ChatController {
       res.status(500).json({ error: err.message });
     }
   }
+
   async getAllChats(req, res) {
-    const { search } = req.query; // Получаем поисковый запрос из параметра query
+    const { search } = req.query;
     try {
       let chats = [];
 
       if (search) {
-        // Поиск с фильтром по имени и фамилии (регистронезависимый)
         chats = await chatModel
           .find({
             $or: [
-              { firstName: { $regex: search, $options: "i" } }, // Поиск по имени
-              { lastName: { $regex: search, $options: "i" } }, // Поиск по фамилии
+              { firstName: { $regex: search, $options: "i" } },
+              { lastName: { $regex: search, $options: "i" } },
             ],
           })
           .populate("userId", "email name");
       } else {
-        // Получение всех чатов
         chats = await chatModel.find().populate("userId", "email name");
       }
 
-      // Если результат не массив (на всякий случай), превращаем его в массив
       if (!Array.isArray(chats)) {
         chats = [chats];
       }
 
-      console.log("Chats found:", chats); // Лог для проверки результата
-      return res.status(200).json(chats); // Отправляем массив чатов на клиент
+      return res.status(200).json(chats);
     } catch (err) {
       return res.status(500).json({ error: err.message });
+    }
+  }
+
+  async getChatById(req, res) {
+    try {
+      const { id } = req.params;
+
+      const chat = await chatModel
+        .findById(id)
+        .populate("userId", "email name");
+
+      if (!chat) {
+        return res.status(404).json({ message: "Chat not found" });
+      }
+
+      res.status(200).json(chat);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
     }
   }
 
@@ -80,6 +94,7 @@ class ChatController {
       res.status(500).json({ error: err.message });
     }
   }
+
   async deleteChat(req, res) {
     try {
       const chat = await chatModel.findById(req.params.id);
@@ -92,6 +107,7 @@ class ChatController {
       res.status(500).json({ error: err.message });
     }
   }
+
   async confirmDeleteChat(req, res) {
     try {
       const chat = await chatModel.findById(req.params.id);
