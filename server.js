@@ -8,7 +8,6 @@ const parser = require("body-parser");
 const router = require("./router/index");
 const errorMiddleware = require("./middlewares/error-middleware");
 const WebSocket = require("ws");
-const axios = require("axios");
 
 const PORT = process.env.PORT || 5200;
 const app = express();
@@ -40,34 +39,28 @@ const start = async () => {
 start();
 
 // WebSocket сервер
-const wss = new WebSocket.Server({ port: 3004 });
+const wss = new WebSocket.Server({ port: 3002 });
+
+let clients = new Set(); // Храним всех подключённых клиентов
 
 wss.on("connection", (ws) => {
   console.log("Client connected");
+  clients.add(ws);
 
-  ws.on("message", async (message) => {
+  ws.on("message", (message) => {
     console.log("Received:", message);
-    const parsedMessage = JSON.parse(message);
 
-    if (parsedMessage.type === "enableAutoMessages") {
-      // Отримати цитату і надіслати назад
-      try {
-        const quote = await fetchQuoteWithRetry();
-        const autoMessage = {
-          type: "autoMessage",
-          content: quote,
-          sender: "system",
-          time: new Date().toISOString(),
-        };
-        ws.send(JSON.stringify(autoMessage));
-      } catch (error) {
-        console.error("Error fetching quote:", error);
+    // Рассылаем сообщение всем клиентам
+    clients.forEach((client) => {
+      if (client !== ws && client.readyState === WebSocket.OPEN) {
+        client.send(message);
       }
-    }
+    });
   });
 
   ws.on("close", () => {
     console.log("Client disconnected");
+    clients.delete(ws);
   });
 
   ws.on("error", (error) => {
@@ -76,25 +69,3 @@ wss.on("connection", (ws) => {
 });
 
 console.log("WebSocket server is running on ws://localhost:3002");
-
-// Нова функція для отримання цитати з використанням RapidAPI
-// const fetchQuoteWithRetry = async (retries = 3, delay = 1000) => {
-//   const options = {
-//     method: "GET",
-//     url: "https://favqs.com/api/qotd",
-//   };
-
-//   for (let attempt = 0; attempt < retries; attempt++) {
-//     try {
-//       const response = await axios.request(options);
-//       return response.data.quote.body; // Повертає текст цитати
-//     } catch (error) {
-//       if (attempt < retries - 1) {
-//         console.log(`Retrying... (${attempt + 1}/${retries})`);
-//         await new Promise((resolve) => setTimeout(resolve, delay));
-//       } else {
-//         throw new Error("Failed to fetch quote after retries.");
-//       }
-//     }
-//   }
-// };

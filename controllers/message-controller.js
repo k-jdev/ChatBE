@@ -31,6 +31,17 @@ class MessageController {
       res.status(500).json({ error: err.message });
     }
   }
+  async getLastMessageByChat(req, res) {
+    try {
+      const lastMessage = await messageModel
+        .findOne({ chatId: req.params.chatId })
+        .sort({ createdAt: -1 }); // Получаем последнее сообщение
+
+      res.status(200).json(lastMessage);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
 }
 
 module.exports = new MessageController();
