@@ -31,9 +31,10 @@ class ChatController {
   async getAllChats(req, res) {
     const { search } = req.query; // Получаем поисковый запрос из параметра query
     try {
-      let chats;
+      let chats = [];
 
       if (search) {
+        // Поиск с фильтром по имени и фамилии (регистронезависимый)
         chats = await chatModel
           .find({
             $or: [
@@ -43,11 +44,17 @@ class ChatController {
           })
           .populate("userId", "email name");
       } else {
+        // Получение всех чатов
         chats = await chatModel.find().populate("userId", "email name");
-        console.log("Chats found:", chats);
       }
 
-      return res.status(200).json(chats); // Отправляем результат на клиент
+      // Если результат не массив (на всякий случай), превращаем его в массив
+      if (!Array.isArray(chats)) {
+        chats = [chats];
+      }
+
+      console.log("Chats found:", chats); // Лог для проверки результата
+      return res.status(200).json(chats); // Отправляем массив чатов на клиент
     } catch (err) {
       return res.status(500).json({ error: err.message });
     }
