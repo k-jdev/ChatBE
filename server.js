@@ -36,8 +36,6 @@ const start = async () => {
   }
 };
 
-start();
-
 // WebSocket сервер
 const wss = new WebSocket.Server({ port: 3002 });
 
@@ -84,3 +82,4 @@ wss.on("connection", (ws) => {
 });
 
 console.log("WebSocket server is running on ws://localhost:3002");
+start();
