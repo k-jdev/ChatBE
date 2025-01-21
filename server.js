@@ -36,36 +36,50 @@ const start = async () => {
   }
 };
 
-start();
-
 // WebSocket сервер
 const wss = new WebSocket.Server({ port: 3002 });
 
-let clients = new Set(); // Храним всех подключённых клиентов
+let clients = new Map(); // Храним всех подключённых клиентов
 
 wss.on("connection", (ws) => {
-  console.log("Client connected");
-  clients.add(ws);
+  console.log("WebSocket клиент подключен");
 
   ws.on("message", (message) => {
-    console.log("Received:", message);
+    const data = JSON.parse(message);
 
-    // Рассылаем сообщение всем клиентам
-    clients.forEach((client) => {
-      if (client !== ws && client.readyState === WebSocket.OPEN) {
-        client.send(message);
+    if (data.type === "join") {
+      // Добавляем клиента в комнату (chatId)
+      if (!clients.has(data.chatId)) {
+        clients.set(data.chatId, new Set());
       }
-    });
+      clients.get(data.chatId).add(ws);
+      console.log(`Клиент присоединился к чату ${data.chatId}`);
+    } else if (data.type === "message") {
+      // Рассылаем сообщение клиентам в той же комнате (chatId)
+      const chatClients = clients.get(data.chatId) || new Set();
+      chatClients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify(data));
+        }
+      });
+    }
   });
 
   ws.on("close", () => {
-    console.log("Client disconnected");
-    clients.delete(ws);
+    // Убираем клиента из всех чатов
+    for (const [chatId, chatClients] of clients.entries()) {
+      chatClients.delete(ws);
+      if (chatClients.size === 0) {
+        clients.delete(chatId);
+      }
+    }
+    console.log("WebSocket клиент отключён");
   });
 
   ws.on("error", (error) => {
-    console.error("WebSocket error:", error);
+    console.error("WebSocket ошибка:", error);
   });
 });
 
 console.log("WebSocket server is running on ws://localhost:3002");
+start();
