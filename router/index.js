@@ -18,6 +18,8 @@ router.post("/login", userController.login);
 router.post("/logout", userController.logout);
 router.post("/chats", chatController.createChat);
 router.post("/messages", messageController.createMessage);
+router.post("/chats/addUser", chatController.addUserToChat);
+
 router.get("/messages/:chatId", messageController.getMessagesByChat);
 router.get("/chats/:id", chatController.getChatById);
 router.get("/messages/:chatId/last", messageController.getLastMessageByChat);

@@ -1,4 +1,3 @@
-// server.js
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
@@ -50,14 +49,14 @@ wss.on("connection", (ws) => {
     if (data.type === "join") {
       // Добавляем клиента в комнату (chatId)
       if (!clients.has(data.chatId)) {
-        clients.set(data.chatId, new Set());
+        clients.set(data.chatId, new Map());
       }
-      clients.get(data.chatId).add(ws);
+      clients.get(data.chatId).set(data.userId, ws);
       console.log(`Клиент присоединился к чату ${data.chatId}`);
     } else if (data.type === "message") {
       // Рассылаем сообщение клиентам в той же комнате (chatId)
-      const chatClients = clients.get(data.chatId) || new Set();
-      chatClients.forEach((client) => {
+      const chatClients = clients.get(data.chatId) || new Map();
+      chatClients.forEach((client, userId) => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(JSON.stringify(data));
         }
@@ -68,7 +67,11 @@ wss.on("connection", (ws) => {
   ws.on("close", () => {
     // Убираем клиента из всех чатов
     for (const [chatId, chatClients] of clients.entries()) {
-      chatClients.delete(ws);
+      for (const [userId, client] of chatClients.entries()) {
+        if (client === ws) {
+          chatClients.delete(userId);
+        }
+      }
       if (chatClients.size === 0) {
         clients.delete(chatId);
       }

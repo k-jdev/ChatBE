@@ -9,7 +9,11 @@ const messageSchema = new Schema(
       required: true,
     },
     content: { type: String, required: true },
-    sender: { type: String, enum: ["user", "system"], default: "user" },
+    sender: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
   { timestamps: true }
 );

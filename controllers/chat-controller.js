@@ -19,10 +19,41 @@ class ChatController {
           .json({ message: "User with this ID does not exist" });
       }
 
-      const newChat = new chatModel({ firstName, lastName, userId });
+      const newChat = new chatModel({
+        firstName,
+        lastName,
+        userId,
+        users: [userId],
+      });
       await newChat.save();
 
       res.status(201).json(newChat);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+
+  async addUserToChat(req, res) {
+    try {
+      const { chatId, userId } = req.body;
+
+      if (!chatId || !userId) {
+        return res
+          .status(400)
+          .json({ message: "Chat ID and user ID are required" });
+      }
+
+      const chat = await chatModel.findById(chatId);
+      if (!chat) {
+        return res.status(404).json({ message: "Chat not found" });
+      }
+
+      if (!chat.users.includes(userId)) {
+        chat.users.push(userId);
+        await chat.save();
+      }
+
+      res.status(200).json(chat);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
